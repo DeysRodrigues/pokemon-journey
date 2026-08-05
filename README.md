@@ -64,8 +64,6 @@ jornada-pokemon/
 3. **Cálculo e persistência**: o back-end compara um valor aleatório (`random`) com a taxa de captura recebida. Em caso de sucesso, insere o registro na tabela `inventario` (SQLite) e retorna o resultado ao front-end.
 4. **Atualização do inventário**: em caso de sucesso, o front-end faz `GET /api/inventario` para sincronizar a lista exibida no PC do Oak.
 
-
-
 ## Endpoints da API
 
 | Método | Rota               | Descrição                                              | Resposta (exemplo)                                         |
@@ -77,13 +75,36 @@ jornada-pokemon/
 
 ### Back-end
 
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
+1. Entre na pasta do back-end:
 
-O servidor sobe por padrão em `http://127.0.0.1:8000`.
+   ```bash
+   cd backend
+   ```
+
+2. *(Opcional, mas recomendado)* Crie e ative um ambiente virtual:
+
+   ```bash
+   python -m venv venv
+   ```
+
+   - **Windows:** `venv\Scripts\activate`
+   - **Mac/Linux:** `source venv/bin/activate`
+
+3. Instale as dependências:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Suba o servidor:
+
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+   O servidor sobe por padrão em `http://127.0.0.1:8000`.
+
+5. *(Opcional)* Teste as rotas sem precisar do front-end: com o servidor rodando, abra `http://127.0.0.1:8000/docs` no navegador. O FastAPI gera automaticamente uma documentação interativa onde dá pra testar o `POST /api/capturar` e o `GET /api/inventario` diretamente.
 
 ### Front-end
 
