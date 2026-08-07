@@ -1,10 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from game_logic import calcular_captura
 from database import criar_tabela, inserir_pokemon, buscar_inventario
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # trocar por origem específica (ex: "http://localhost:5500") antes de produção
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 criar_tabela()
 
