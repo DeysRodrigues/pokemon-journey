@@ -1,19 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from game_logic import calcular_captura
 from database import criar_tabela, inserir_pokemon, buscar_inventario
 
+
 app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, substitua pela origem do front-end
+    allow_origins=["*"],  # Em produção, restringir para a origem do front-end
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 criar_tabela()
 
@@ -28,35 +31,56 @@ class PokemonParaCapturar(BaseModel):
 @app.post("/api/capturar")
 def capturar(pokemon: PokemonParaCapturar):
 
-    sucesso = calcular_captura(pokemon.capture_rate)
+    try:
 
-    if not sucesso:
-        return {
-            "sucesso": False,
-            "mensagem": "O Pokémon fugiu!"
-        }
+        sucesso = calcular_captura(pokemon.capture_rate)
 
-    
-    inserido = inserir_pokemon(
-        pokemon.id,
-        pokemon.nome,
-        pokemon.imagem
-    )
+        if not sucesso:
+            return {
+                "sucesso": False,
+                "mensagem": "O Pokémon fugiu!"
+            }
 
-    
-    if inserido:
+
+        inserido = inserir_pokemon(
+            pokemon.id,
+            pokemon.nome,
+            pokemon.imagem
+        )
+
+
+        if inserido:
+            return {
+                "sucesso": True,
+                "mensagem": "Pokémon capturado!"
+            }
+
+
         return {
             "sucesso": True,
-            "mensagem": "Pokémon capturado!"
+            "mensagem": "Este Pokémon já faz parte da sua coleção!"
         }
 
-    
-    return {
-        "sucesso": True,
-        "mensagem": "Você já capturou esse Pokémon anteriormente!"
-    }
+
+    except Exception as erro:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao processar captura: {erro}"
+        )
 
 
 @app.get("/api/inventario")
 def inventario():
-    return buscar_inventario()
+
+    try:
+
+        return buscar_inventario()
+
+
+    except Exception as erro:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro ao carregar inventário: {erro}"
+        )
