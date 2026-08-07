@@ -4,19 +4,22 @@ DB_PATH = "inventario.db"
 
 def criar_tabela():
     conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS inventario (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pokemon_id INTEGER NOT NULL,
-            nome TEXT NOT NULL,
-            sprite TEXT NOT NULL
-        )
-    """)
-
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS inventario (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pokemon_id INTEGER NOT NULL,
+                nome TEXT NOT NULL,
+                sprite TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao criar tabela: {e}")
+        raise
+    finally:
+        conn.close()
 
 def inserir_pokemon(pokemon_id: int, nome: str, sprite: str):
     conn = sqlite3.connect(DB_PATH)
