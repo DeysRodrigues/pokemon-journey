@@ -9,13 +9,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # trocar por origem específica (ex: "http://localhost:5500") antes de produção
-    allow_credentials=False,  
+    allow_origins=["*"],  # Em produção, substitua pela origem do front-end
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 criar_tabela()
+
 
 class PokemonParaCapturar(BaseModel):
     id: int
@@ -23,15 +24,37 @@ class PokemonParaCapturar(BaseModel):
     imagem: str
     capture_rate: int
 
+
 @app.post("/api/capturar")
 def capturar(pokemon: PokemonParaCapturar):
+
     sucesso = calcular_captura(pokemon.capture_rate)
 
-    if sucesso:
-        inserir_pokemon(pokemon.id, pokemon.nome, pokemon.imagem)
-        return {"sucesso": True, "mensagem": "Capturado!"}
+    if not sucesso:
+        return {
+            "sucesso": False,
+            "mensagem": "O Pokémon fugiu!"
+        }
 
-    return {"sucesso": False, "mensagem": "O Pokémon fugiu!"}
+    
+    inserido = inserir_pokemon(
+        pokemon.id,
+        pokemon.nome,
+        pokemon.imagem
+    )
+
+    
+    if inserido:
+        return {
+            "sucesso": True,
+            "mensagem": "Pokémon capturado!"
+        }
+
+    
+    return {
+        "sucesso": True,
+        "mensagem": "Você já capturou esse Pokémon anteriormente!"
+    }
 
 
 @app.get("/api/inventario")
