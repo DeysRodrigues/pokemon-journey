@@ -19,28 +19,31 @@ def criar_tabela():
     conn.close()
 
 def inserir_pokemon(pokemon_id: int, nome: str, sprite: str):
-   
     conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "INSERT INTO inventario (pokemon_id, nome, sprite) VALUES (?, ?, ?)",
-        (pokemon_id, nome, sprite)
-    )
-
-    conn.commit()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO inventario (pokemon_id, nome, sprite) VALUES (?, ?, ?)",
+            (pokemon_id, nome, sprite)
+        )
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao inserir no banco: {e}")
+        raise
+    finally:
+        conn.close()
 
 def buscar_inventario():
-    
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT pokemon_id AS id, nome, sprite AS imagem FROM inventario")
-    linhas = cursor.fetchall()
-
-    conn.close()
-
-    resultado = [dict(linha) for linha in linhas]
-    return resultado
+    try:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT pokemon_id AS id, nome, sprite AS imagem FROM inventario")
+        linhas = cursor.fetchall()
+        resultado = [dict(linha) for linha in linhas]
+        return resultado
+    except sqlite3.Error as e:
+        print(f"Erro ao buscar inventário: {e}")
+        raise
+    finally:
+        conn.close()
