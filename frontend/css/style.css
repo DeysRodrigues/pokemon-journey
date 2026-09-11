@@ -1,0 +1,491 @@
+/* Variáveis globais: paleta de cores e o "recorte" de cantos serrilhados reutilizado
+   pelos elementos montados só com CSS (sem imagem de fundo). */
+:root {
+    /* Paleta extraída da wallpaper pixel de referência (verde/teal + dourado + azul cristal) */
+    --color-dark: #14302a;
+    --color-grass-light: #7ff08f;
+    --color-grass: #42cd8f;
+    --color-grass-deep: #1a9c6b;
+    --color-teal: #1bebc6;
+    --color-teal-deep: #1c7a70;
+    --color-blue: #1487e4;
+    --color-cyan: #22d4f2;
+    --color-gold: #eab654;
+    --color-gold-light: #f6e3ab;
+    --color-gold-deep: #b9822f;
+    --color-cream: #f6efd8;
+    --color-pink: #f2a6c2;
+    --color-red: #ef5b6b;
+    --color-red-deep: #b53547;
+    --color-ui-bg: var(--color-cream);
+
+    /* Cantos serrilhados (estilo carta pixel), usado em elementos montados em CSS puro */
+    --notch: 8px;
+    --notch-shape: polygon(
+        0 var(--notch), var(--notch) var(--notch), var(--notch) 0,
+        calc(100% - var(--notch)) 0, calc(100% - var(--notch)) var(--notch), 100% var(--notch),
+        100% calc(100% - var(--notch)), calc(100% - var(--notch)) calc(100% - var(--notch)), calc(100% - var(--notch)) 100%,
+        var(--notch) 100%, var(--notch) calc(100% - var(--notch)), 0 calc(100% - var(--notch))
+    );
+}
+
+/* <body>: fundo da página inteira, a mesma arte da clareira, escurecida por uma
+   camada translúcida pra os painéis por cima continuarem legíveis. */
+body {
+    font-family: 'Press Start 2P', cursive; /* Fonte 8-bits */
+    background-color: var(--color-grass-deep);
+    background-image:
+        linear-gradient(180deg, rgba(10, 26, 22, 0.45), rgba(10, 26, 22, 0.6)),
+        url('../assets/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    image-rendering: pixelated;
+    color: var(--color-dark);
+    -webkit-font-smoothing: none;
+}
+
+/* Toda <img> do site: mantém a arte pixelada nítida mesmo ampliada (sem blur do navegador). */
+img {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+}
+
+/* .pixel-btn: botão "Explorar" (não existe asset pronto pra esse estado,
+   então ele é um botão de verdade com borda/sombra estilo pixel, não imagem). */
+.pixel-btn {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-ui-bg);
+    border: 4px solid var(--color-dark);
+    box-shadow: inset -4px -4px 0px rgba(0,0,0,0.2), 3px 3px 0px var(--color-dark);
+    text-transform: uppercase;
+    transition: all 0.1s;
+}
+/* Brilho diagonal (efeito de verniz) desenhado por cima do botão */
+.pixel-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.35) 46%, transparent 58%);
+    pointer-events: none;
+}
+/* Efeito de "afundar" o botão quando clicado */
+.pixel-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: inset -2px -2px 0px rgba(0,0,0,0.2), 0px 0px 0px var(--color-dark);
+}
+/* Aparência de botão desabilitado (ex: enquanto busca um Pokémon) */
+.pixel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* Variante de cor azul/ciano, usada só no botão Explorar */
+.pixel-btn-blue {
+    background: linear-gradient(180deg, var(--color-cyan), var(--color-blue));
+    color: white;
+    text-shadow: 2px 2px 0px #0c4a86;
+}
+
+/* #btn-catch: botão "Capturar!", é a imagem capture-button.png dentro de um <button>
+   de verdade, então só precisa dos estados de desabilitado/clique. */
+#btn-catch:disabled { opacity: 0.6; cursor: not-allowed; }
+#btn-catch:active img { transform: translateY(2px); }
+
+/* ----------------- Tela do mapa (moldura + cenário de verdade, via assets) ----------------- */
+
+/* .map-screen: container da área de jogo (o "quadro" com o Pokémon selvagem);
+   altura mínima pra nunca colapsar antes do conteúdo carregar. */
+.map-screen {
+    min-height: 380px;
+}
+
+/* .map-bg: camada de fundo, a arte da clareira, cobrindo toda a tela do mapa */
+.map-bg {
+    background-image: url('../assets/background.png');
+    background-size: cover;
+    background-position: center 65%;
+    background-repeat: no-repeat;
+}
+
+/* .map-frame: camada da moldura de madeira com folhas, por cima do fundo.
+   Usa border-image (não uma <img> comum) pra esticar só as bordas retas e manter
+   os cantos decorados sem distorcer, em qualquer tamanho de tela. */
+.map-frame {
+    border-style: solid;
+    border-width: 20px;
+    border-image-source: url('../assets/ui/frame.png');
+    border-image-slice: 55 55 130 55;
+    border-image-width: 6.1% 4.7% 14.1% 4.7%;
+    border-image-repeat: stretch;
+}
+
+/* .map-btn-slot: posição/tamanho do botão Explorar/Capturar, encaixado
+   no vão que a moldura deixa na borda inferior */
+.map-btn-slot {
+    width: 54%;
+    bottom: 6%;
+}
+
+/* Sombra oval no chão, pra "grudar" o sprite do Pokémon no cenário */
+.pokemon-shadow {
+    width: 60%;
+    height: 14px;
+    margin: -10px auto 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 70%);
+}
+
+/* Card de nome + chance de captura - elementos de verdade (sem imagem de fundo),
+   cantos serrilhados via clip-path (moldura escura + preenchimento creme por cima). */
+
+/* .chance-frame: a "moldura", só a cor de fundo escura recortada, dá o efeito de borda */
+.chance-frame {
+    width: min(230px, 46%);
+    padding: 4px;
+    background: var(--color-dark);
+    clip-path: var(--notch-shape);
+    filter: drop-shadow(3px 3px 0 rgba(10, 26, 22, 0.35));
+    display: flex;
+}
+/* .chance-card: o preenchimento creme por dentro da moldura, onde o conteúdo mora */
+.chance-card {
+    flex: 1;
+    min-width: 0;
+    background: var(--color-cream);
+    clip-path: var(--notch-shape);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px 8px;
+}
+/* Linha do topo do card: ícone + nome do Pokémon lado a lado */
+.chance-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    max-width: 100%;
+}
+/* Pokébola pequena, só decorativa, ao lado do nome */
+.chance-card-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+/* Nome do Pokémon selvagem (preenchido via JS) */
+.chance-card-name {
+    font-size: 10px;
+    color: var(--color-dark);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* Trilho (fundo) da barra de chance de captura */
+.chance-card-bar-track {
+    width: 100%;
+    height: 14px;
+    background: #cfe4d3;
+    border: 1px solid rgba(20, 48, 42, 0.35);
+    border-radius: 999px;
+    overflow: hidden;
+}
+/* Preenchimento verde da barra; a largura (%) é controlada pelo JS */
+.chance-card-bar-fill {
+    height: 100%;
+    background: linear-gradient(180deg, #7be495, #2fae57);
+}
+/* Linha "CHANCE: X%" abaixo da barra */
+.chance-card-label {
+    font-size: 9px;
+    color: var(--color-dark);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+/* Só a porcentagem, em verde, dentro da linha acima */
+.chance-card-pct {
+    color: #1c8a4a;
+}
+
+/* Animações (Mantivemos a lógica, mas com "steps" para parecer menos fluido e mais retrô) */
+
+/* Pokémon selvagem flutuando suavemente enquanto espera a captura */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+.pokemon-float {
+    animation: float 2s steps(4) infinite;
+}
+
+/* Pokébola sendo arremessada em direção ao Pokémon */
+@keyframes throwPokeball {
+    0% { transform: translate(-50%, 100px) scale(2); opacity: 0; }
+    50% { transform: translate(-50%, -30px) scale(1.5); opacity: 1; }
+    100% { transform: translate(-50%, 0px) scale(1); opacity: 1; }
+}
+/* Pokébola chacoalhando enquanto aguarda o resultado do back-end */
+@keyframes shake {
+    0%, 100% { transform: translate(-50%, 0) rotate(0deg); }
+    25% { transform: translate(-50%, 0) rotate(-15deg); }
+    75% { transform: translate(-50%, 0) rotate(15deg); }
+}
+
+.anim-throw { animation: throwPokeball 0.5s steps(5) forwards; }
+.anim-shake { animation: shake 1s steps(2) infinite; }
+
+/* Brilho dourado pulsante na pokébola quando a captura dá certo */
+@keyframes captureSuccess {
+    0% { filter: drop-shadow(0 0 0px var(--color-gold)); }
+    50% { filter: drop-shadow(0 0 10px var(--color-gold)); }
+    100% { filter: drop-shadow(0 0 0px var(--color-gold)); }
+}
+.anim-success { animation: captureSuccess 1s steps(3) forwards; }
+
+/* ------------------- Bag (inventário), via asset único (bag-frame.png) ----------------- */
+
+/* .bag-panel: o painel inteiro da Bag (moldura + grade + nome); só a sombra externa */
+.bag-panel {
+    filter: drop-shadow(5px 5px 0 rgba(10, 26, 22, 0.35));
+}
+
+/* .bag-window: janela grande (grade 3x3), posicionada dentro do buraco vazado
+   da imagem bag-frame.png - os slots de Pokémon são criados aqui via JS */
+.bag-window {
+    position: absolute;
+    left: 12.8%;
+    top: 18.6%;
+    right: 12.7%;
+    bottom: 24.1%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 3%;
+    padding: 3%;
+    background: rgba(246, 239, 216, 0.4);
+    border-radius: 4px;
+}
+/* Cada um dos 9 espaços da grade (vazio ou ocupado) */
+.bag-window .slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(246, 239, 216, 0.85);
+    border: 2px dashed rgba(20, 48, 42, 0.35);
+    border-radius: 8px;
+}
+/* Sprite do Pokémon (ou a pokébola de placeholder) dentro do slot */
+.bag-window .slot img {
+    width: 94%;
+    height: 94%;
+    object-fit: contain;
+    pointer-events: none;
+}
+/* Slot vazio: pokébola de placeholder meio apagada */
+.bag-window .slot.empty img {
+    opacity: 0.3;
+}
+/* Slot ocupado: borda sólida e pode ser clicado pra selecionar o Pokémon */
+.bag-window .slot.filled {
+    cursor: pointer;
+    border-style: solid;
+    border-color: rgba(20, 48, 42, 0.25);
+}
+/* Sombra leve no sprite do Pokémon capturado */
+.bag-window .slot.filled img {
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.2));
+}
+/* Destaque (borda teal) do slot atualmente selecionado */
+.bag-window .slot.selected {
+    outline: 3px solid var(--color-teal);
+    outline-offset: -2px;
+    background: rgba(27, 235, 198, 0.25);
+    border-color: var(--color-teal-deep);
+}
+/* Balãozinho com o nome do Pokémon, escondido por padrão */
+.bag-window .slot .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 4px;
+    background: var(--color-dark);
+    color: var(--color-cream);
+    border: 2px solid var(--color-gold);
+    padding: 2px 6px;
+    white-space: nowrap;
+    z-index: 20;
+    display: none;
+}
+/* Mostra o balão do nome quando o mouse passa por cima do slot */
+.bag-window .slot:hover .tooltip {
+    display: block;
+}
+
+/* .bag-name-window: janela pequena (placa) com o nome do Pokémon selecionado,
+   posicionada dentro do segundo buraco vazado da bag-frame.png */
+.bag-name-window {
+    position: absolute;
+    left: 13.2%;
+    top: 80.3%;
+    right: 13.1%;
+    bottom: 9.05%;
+    background: var(--color-cream);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6%;
+}
+/* Texto do nome; corta com reticências se o nome for grande demais pro espaço */
+.bag-name-window span {
+    font-size: 11px;
+    color: var(--color-dark);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Contador "CAPTURADOS: X", abaixo da Bag */
+.bag-count {
+    font-size: 8px;
+    line-height: 12px;
+    text-align: center;
+    margin-top: 8px;
+    color: var(--color-cream);
+}
+
+/* ================= Popup do Pokémon (abre ao lado da Bag ao clicar num capturado) ================= */
+
+/* .pokemon-popup: o popup inteiro. A caixa completa (moldura + placa do nome +
+   área do corpo) já vem pronta em popup-box.png; aqui só posicionamos o popup
+   do lado da Bag e sobrepomos nome/sprite/botão de fechar nos lugares certos.
+   Não usa fundo escurecendo a tela (não é modal), então nunca bloqueia o resto
+   da interface; só fecha no X ou clicando o mesmo Pokémon de novo. */
+.pokemon-popup {
+    position: absolute;
+    top: 4%;
+    /* Tenta ficar coladinho à direita da Bag; se a janela não tiver espaço sobrando
+       ali (container centralizado sem margem), desliza pra dentro da tela em vez
+       de vazar pra fora e gerar barra de rolagem horizontal. */
+    left: min(calc(100% + 14px), calc(100vw - 300px));
+    width: 280px;
+    z-index: 40;
+    filter: drop-shadow(4px 4px 0 rgba(10, 26, 22, 0.4));
+}
+/* A imagem da caixa inteira */
+.popup-box-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+/* Nome do Pokémon, sobreposto na placa creme do topo */
+.popup-box-name {
+    position: absolute;
+    left: 29.7%;
+    top: 6.8%;
+    width: 48%;
+    height: 14.8%;
+    display: flex;
+    align-items: center;
+    font-size: 9px;
+    color: var(--color-dark);
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+/* Botão invisível bem em cima do X já desenhado na caixa */
+.popup-box-close {
+    position: absolute;
+    left: 78%;
+    top: 9%;
+    width: 10%;
+    height: 10%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+/* Área grande do corpo (dentro da caixa), onde o sprite fica centralizado */
+.popup-box-body {
+    position: absolute;
+    left: 6.2%;
+    top: 26.8%;
+    width: 86.9%;
+    height: 61.2%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Sprite grande (animado quando a PokéAPI tiver a versão Gen V) do Pokémon selecionado */
+.pokemon-popup-sprite {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
+}
+
+/* Em telas estreitas não há espaço ao lado da Bag, o popup vira flutuante e centralizado */
+@media (max-width: 767px) {
+    .pokemon-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Navegação entre boxes da Bag (setas ◀ ▶ + "BOX N / total") */
+.box-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+/* Botões de trocar de box */
+.box-nav-btn {
+    background: var(--color-cream);
+    color: var(--color-dark);
+    border: 2px solid var(--color-dark);
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 1;
+    padding: 5px 9px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 rgba(10, 26, 22, 0.4);
+}
+/* Efeito de "afundar" ao clicar numa seta */
+.box-nav-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+/* Seta desabilitada (ex: ◀ na primeira box, ▶ na última) */
+.box-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+/* Texto "BOX N / total" entre as setas */
+.box-nav-label {
+    font-size: 9px;
+    color: var(--color-cream);
+    min-width: 78px;
+    text-align: center;
+}
+
+/* Tamanhos de fonte auxiliares, usados em textos pequenos pela tela toda */
+.text-micro { font-size: 8px; line-height: 12px; }
+.text-mini { font-size: 10px; line-height: 16px; }
+
+/* Esconde a barra de rolagem (disponível pra uso futuro em listas que rolem) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
