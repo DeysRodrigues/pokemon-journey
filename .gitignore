@@ -1,0 +1,9 @@
+# Back-end
+backend/.venv/
+backend/__pycache__/
+backend/inventario.db
+__pycache__/
+*.pyc
+
+# Editor / SO
+.DS_Store
