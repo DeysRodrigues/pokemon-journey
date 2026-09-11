@@ -1,13 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Jornada Pokémon</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Press Start 2P para o efeito pixelado -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <h1>
-        hello
-    </h1>
+<body class="min-h-screen flex items-center justify-center p-4 md:p-8">
+
+    <!-- Container Principal do App -->
+    <div class="max-w-6xl w-full h-[85vh] flex flex-col md:flex-row gap-4 md:gap-6">
+
+        <!-- PAINEL ESQUERDO: Mapa / Exploração -->
+        <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- Cabeçalho do Mapa -->
+            <div class="flex items-stretch gap-2 h-11 md:h-14 mb-2 shrink-0">
+                <img src="assets/ui/header-bar.png" alt="Rota 1" class="h-full w-auto flex-1 min-w-0 object-contain object-left">
+                <img src="assets/ui/status-dots.png" alt="" class="h-full w-auto shrink-0">
+            </div>
+
+            <!-- Área Visual do Jogo -->
+            <div class="map-screen relative flex-1 min-h-0">
+
+                <!-- Cenário (clareira da floresta) -->
+                <div class="map-bg absolute inset-0"></div>
+
+                <!-- Moldura de madeira com folhas (border-image) -->
+                <div class="map-frame absolute inset-0 pointer-events-none"></div>
+
+                <!-- Área onde o Pokémon aparece -->
+                <div id="encounter-zone" class="hidden absolute inset-0 flex flex-col items-center z-10" style="padding-top: 33%">
+
+                    <!-- Card de nome + chance de captura (elementos de verdade, sem imagem de fundo) -->
+                    <div class="chance-frame mb-3">
+                        <div class="chance-card">
+                            <div class="chance-card-header">
+                                <img src="assets/ui/items/pokeball.png" alt="" class="chance-card-icon">
+                                <span id="pokemon-name" class="chance-card-name">BULBASAUR</span>
+                            </div>
+                            <div class="chance-card-bar-track">
+                                <div id="capture-chance-bar" class="chance-card-bar-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="chance-card-label">CHANCE: <span id="pokemon-capture-rate" class="chance-card-pct"></span></span>
+                        </div>
+                    </div>
+
+                    <!-- Imagem do Pokémon Selvagem (Sprite Maior) -->
+                    <img id="pokemon-image" src="" alt="Pokémon" class="w-40 h-40 md:w-32 md:h-60 object-contain pokemon-float drop-shadow-[3px_3px_0_rgba(0,0,0,0.25)]">
+                    <!-- Sombra no chão, pra fixar o sprite na grama do fundo -->
+                    <div class="pokemon-shadow"></div>
+                </div>
+
+                <!-- Pokébola de Captura (animação de arremesso) -->
+                <img id="capture-pokeball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+                     alt="Pokébola" class="w-10 h-10 hidden absolute bottom-[16%] left-1/2 -translate-x-1/2 z-20">
+
+                <!-- Botões de Ação (posicionados sobre o encaixe da moldura) -->
+                <div class="map-btn-slot absolute left-1/2 -translate-x-1/2 z-30">
+                    <button id="btn-explore" class="pixel-btn pixel-btn-blue w-full text-[10px] md:text-xs py-3 px-4 flex items-center justify-center gap-3">
+                        <span>▶ EXPLORAR</span>
+                    </button>
+
+                    <button id="btn-catch" class="hidden w-full border-0 bg-transparent p-0 cursor-pointer">
+                        <img src="assets/ui/capture-button.png" alt="Capturar!" class="w-full h-auto block">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAINEL DIREITO: Bag -->
+        <div class="relative w-full md:w-96 shrink-0 flex flex-col">
+            <div class="bag-panel relative w-full">
+                <img src="assets/ui/bag-frame.png" alt="Bag" class="w-full h-auto block">
+
+                <!-- Grade 3x3 dos Pokémon capturados -->
+                <div id="inventory-grid" class="bag-window"></div>
+
+                <!-- Nome do Pokémon selecionado -->
+                <div class="bag-name-window">
+                    <span id="status-name"></span>
+                </div>
+            </div>
+
+            <!-- Popup do Pokémon: abre ao lado da Bag ao clicar num capturado, sem cobrir o resto da tela.
+                 A caixa inteira (moldura + placa + área do corpo) já vem pronta em popup-box.png;
+                 só sobrepomos o nome e o sprite do Pokémon nos lugares certos. -->
+            <div id="pokemon-popup" class="pokemon-popup hidden">
+                <img src="assets/ui/popup-box.png" alt="" class="popup-box-img">
+                <span id="popup-pokemon-name" class="popup-box-name"></span>
+                <button id="popup-close-btn" class="popup-box-close" aria-label="Fechar"></button>
+                <div class="popup-box-body">
+                    <img id="popup-pokemon-sprite" src="" alt="" class="pokemon-popup-sprite">
+                </div>
+            </div>
+
+            <!-- Navegação entre boxes (como o PC do Professor Carvalho nos jogos) -->
+            <div class="box-nav mt-2">
+                <button id="btn-box-prev" class="box-nav-btn" aria-label="Box anterior">◀</button>
+                <span id="box-label" class="box-nav-label">BOX 1 / 1</span>
+                <button id="btn-box-next" class="box-nav-btn" aria-label="Próxima box">▶</button>
+            </div>
+
+            <p id="inventory-count-label" class="bag-count">
+                CAPTURADOS: <span id="inventory-count">0</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Sistema de Notificação (Toast) Retrô -->
+    <div id="toast-container" class="fixed top-8 left-1/2 transform -translate-x-1/2 flex flex-col gap-2 z-50 w-11/12 max-w-md"></div>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
